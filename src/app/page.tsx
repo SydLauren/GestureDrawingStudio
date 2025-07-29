@@ -1,40 +1,23 @@
-'use client';
-import Neat from '@/components/Neat';
-import Flex from '@/components/ui/Flex';
-import { Toaster } from '@/components/ui/toaster';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { createServerSupabase } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import LoginButton from '@/components/LoginButton';
 
-export default function Home() {
-  const queryClient = new QueryClient();
+export default async function MarketingPage() {
+  const supabase = await createServerSupabase();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect('/studio'); // 👈 prevent signed-in users from seeing marketing page
+  }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Flex className="h-screen w-full">
-        <Flex
-          direction={'column'}
-          justify={'center'}
-          gap={3}
-          className="w-full"
-        >
-          Hi There! This template has:
-          <ul className="list-disc">
-            <li>React Query</li>
-            <li>Axios</li>
-            <li>Shadcn/ui</li>
-            <li>Ramda</li>
-            <li>TailwindCSS</li>
-            <li>Heroicons</li>
-            <li>CVA</li>
-            <li>Playwright</li>
-            <li>Storybook</li>
-            <li>Jest</li>
-          </ul>
-        </Flex>
-        <Neat />
-      </Flex>
-      <Toaster />
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <main className="flex min-h-screen flex-col items-center justify-center p-8 text-center">
+      <h1 className="mb-6 text-4xl font-bold md:text-6xl">
+        Gesture Drawing Studio
+      </h1>
+      <LoginButton />
+    </main>
   );
 }
