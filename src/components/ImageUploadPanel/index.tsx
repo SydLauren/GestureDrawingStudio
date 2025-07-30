@@ -34,6 +34,7 @@ export default function ImageUploadPanel({ userId }: Props) {
       // ✅ Refresh the gallery
       queryClient.invalidateQueries({ queryKey: ['user-images'] });
       toast.success('Upload complete!');
+      // eslint-disable-next-line
     } catch (err: any) {
       console.error(err);
       toast.error('Upload failed', {

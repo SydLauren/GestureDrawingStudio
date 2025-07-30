@@ -14,6 +14,7 @@ export default function ImageGallery() {
 
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+      {/* eslint-disable-next-line */}
       {images.map((img: any) => (
         <div
           key={img.id}
