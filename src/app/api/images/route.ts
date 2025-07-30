@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createApiSupabase } from '@/lib/supabase/api';
+import { Image } from '@prisma/client';
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(): Promise<NextResponse<Image[] | string>> {
   const cookieStore = await cookies();
   const supabase = createApiSupabase(cookieStore);
 

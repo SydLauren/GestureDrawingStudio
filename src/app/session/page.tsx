@@ -67,6 +67,7 @@ export default function SessionPage() {
   const handlePauseResume = () => setIsPaused((prev) => !prev);
 
   const handleShuffle = () => {
+    if (!allImages) return;
     const currentImage = sessionImages[currentIndex];
     const otherImages = allImages
       .map((img) => img.path)
