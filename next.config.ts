@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: 'fidovzsrmagttjnljjos.supabase.co',
         pathname: '/storage/v1/object/public/user-images/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+        pathname: '/**',
+      },
     ],
   },
 };
