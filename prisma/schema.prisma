@@ -1,0 +1,25 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id     String  @id            // Supabase auth ID (UUID)
+  email  String?
+  images Image[]
+}
+
+model Image {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  user      User     @relation(fields: [userId], references: [id])
+  path      String
+  tags      String[] // text[] in Postgres
+  createdAt DateTime @default(now())
+}
