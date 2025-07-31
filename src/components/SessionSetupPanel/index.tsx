@@ -10,8 +10,8 @@ import {
 } from '@/lib/utils/formatTime';
 import { useSessionStore } from '@/lib/store/session';
 
-const TIME_OPTIONS = [300, 180, 120, 90, 60, 45, 30, 15, 2];
-const IMAGE_COUNT_OPTIONS = [2, 5, 10, 20, 30, 40];
+const TIME_OPTIONS = [1200, 600, 300, 180, 120, 90, 60, 45, 30, 15, 2];
+const IMAGE_COUNT_OPTIONS = [1, 2, 5, 10, 20, 30, 40];
 
 export type SessionDefinition = {
   timePerImage: number; // seconds
