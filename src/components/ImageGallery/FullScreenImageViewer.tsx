@@ -7,6 +7,8 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 
 import StartSessionDialog from './StartSessionDialog';
+import { Button } from '../ui/button';
+import DeleteImageAlert from './DeleteImageAlert';
 
 export default function FullscreenImageViewer() {
   const searchParams = useSearchParams();
@@ -15,6 +17,7 @@ export default function FullscreenImageViewer() {
   const { data: images } = useUserImages();
 
   const [showTimerDialog, setShowTimerDialog] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const image = images?.find((img) => img.id === imageId);
 
@@ -84,6 +87,13 @@ export default function FullscreenImageViewer() {
             >
               ✕
             </button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              Delete
+            </Button>
           </div>
         </div>
         {/* Left arrow */}
@@ -120,6 +130,11 @@ export default function FullscreenImageViewer() {
       <StartSessionDialog
         open={showTimerDialog}
         setOpen={setShowTimerDialog}
+        imageId={imageId}
+      />
+      <DeleteImageAlert
+        open={showDeleteConfirm}
+        setOpen={setShowDeleteConfirm}
         imageId={imageId}
       />
     </div>
