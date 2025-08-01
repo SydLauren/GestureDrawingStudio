@@ -5,10 +5,10 @@ import { createServerSupabase } from '@/lib/supabase/server';
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } },
+  context: { params: { id: string } },
 ) {
   const supabase = await createServerSupabase();
-  const { id } = params;
+  const { id } = context.params;
 
   const image = await prisma.image.findUnique({ where: { id } });
   if (!image) return new NextResponse('Not found', { status: 404 });
