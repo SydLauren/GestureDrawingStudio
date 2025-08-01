@@ -20,10 +20,24 @@ export default function SessionPage() {
   const [isPaused, setIsPaused] = useState(false);
   const [shuffleKey, setShuffleKey] = useState(Date.now());
 
+  const mode = config?.timerMode ?? 'fixed';
+
   // Generate a session image list once images are loaded
   useEffect(() => {
     if (!config || !allImages?.length) return;
 
+    if (config?.imageId) {
+      const selected = allImages.find((img) => img.id === config.imageId);
+      if (selected) {
+        setSessionImages([selected.path]);
+        setTimeLeft(config.timePerImage ?? 0);
+      } else {
+        console.warn('Image with ID not found in user images.');
+      }
+      return;
+    }
+
+    // Default behavior for randomized session
     const loopedImages = [];
     const total = config.numberOfImages ?? 1;
 
@@ -38,6 +52,15 @@ export default function SessionPage() {
   // Timer logic
   useEffect(() => {
     if (isPaused || !sessionImages.length) return;
+
+    if (mode === 'countup') {
+      // advance the timer to count up
+      const interval = setInterval(() => {
+        setTimeLeft((t) => t + 1);
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
 
     if (timeLeft <= 0) {
       if (currentIndex < sessionImages.length - 1) {
@@ -62,6 +85,7 @@ export default function SessionPage() {
     sessionImages.length,
     config?.timePerImage,
     router,
+    mode,
   ]);
 
   const handlePauseResume = () => setIsPaused((prev) => !prev);

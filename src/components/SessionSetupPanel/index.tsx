@@ -13,10 +13,17 @@ import { useSessionStore } from '@/lib/store/session';
 const TIME_OPTIONS = [1200, 600, 300, 180, 120, 90, 60, 45, 30, 15, 2];
 const IMAGE_COUNT_OPTIONS = [1, 2, 5, 10, 20, 30, 40];
 
+export enum TimerMode {
+  Custom = 'custom',
+  Countup = 'countup',
+  Fixed = 'fixed',
+}
+
 export type SessionDefinition = {
   timePerImage: number; // seconds
   numberOfImages: number;
-  // Future: breaks, rampUp, spacing, etc
+  imageId?: string; // for starting with a specific image
+  timerMode?: TimerMode;
 };
 
 export default function SessionSetupPanel() {

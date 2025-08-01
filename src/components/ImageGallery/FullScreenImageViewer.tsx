@@ -5,22 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useUserImages } from '@/lib/db/hooks/useUserImages';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
-enum TimerMode {
-  Custom = 'custom',
-  Countup = 'countup',
-}
+import StartSessionDialog from './StartSessionDialog';
 
 export default function FullscreenImageViewer() {
   const searchParams = useSearchParams();
@@ -29,12 +15,6 @@ export default function FullscreenImageViewer() {
   const { data: images } = useUserImages();
 
   const [showTimerDialog, setShowTimerDialog] = useState(false);
-  const [timerMode, setTimerMode] = useState(TimerMode.Custom);
-  const [duration, setDuration] = useState({
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
 
   const image = images?.find((img) => img.id === imageId);
 
@@ -137,108 +117,11 @@ export default function FullscreenImageViewer() {
             </button>
           )}
       </div>
-      <Dialog open={showTimerDialog} onOpenChange={setShowTimerDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Start Drawing Session</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <RadioGroup
-              defaultValue={TimerMode.Countup}
-              value={timerMode}
-              onValueChange={(mode: TimerMode) => setTimerMode(mode)}
-              className="space-y-4"
-            >
-              <div>
-                <RadioGroupItem
-                  value={TimerMode.Countup}
-                  id={TimerMode.Countup}
-                />
-                <Label htmlFor={TimerMode.Countup} className="ml-2">
-                  ⏱ Start timer (counting up)
-                </Label>
-              </div>
-
-              <div>
-                <RadioGroupItem
-                  value={TimerMode.Custom}
-                  id={TimerMode.Custom}
-                />
-                <Label htmlFor={TimerMode.Custom} className="ml-2">
-                  Set a custom duration:
-                </Label>
-
-                {timerMode === TimerMode.Custom && (
-                  <div className="mt-2 flex gap-2">
-                    <div className="flex w-24 flex-col">
-                      <Label htmlFor="hours">Hours</Label>
-                      <Input
-                        id="hours"
-                        type="number"
-                        min="0"
-                        value={duration.hours}
-                        onChange={(e) =>
-                          setDuration((d) => ({ ...d, hours: +e.target.value }))
-                        }
-                      />
-                    </div>
-                    <div className="flex w-24 flex-col">
-                      <Label htmlFor="minutes">Minutes</Label>
-                      <Input
-                        id="minutes"
-                        type="number"
-                        min="0"
-                        max="59"
-                        value={duration.minutes}
-                        onChange={(e) =>
-                          setDuration((d) => ({
-                            ...d,
-                            minutes: +e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                    <div className="flex w-24 flex-col">
-                      <Label htmlFor="seconds">Seconds</Label>
-                      <Input
-                        id="seconds"
-                        type="number"
-                        min="0"
-                        max="59"
-                        value={duration.seconds}
-                        onChange={(e) =>
-                          setDuration((d) => ({
-                            ...d,
-                            seconds: +e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </RadioGroup>
-          </div>
-
-          <DialogFooter className="mt-4">
-            <Button
-              onClick={() => {
-                if (timerMode === 'countup') {
-                  // TODO: start count-up timer
-                } else {
-                  // TODO: start custom timer with duration
-                }
-              }}
-            >
-              Start
-            </Button>
-            <Button variant="ghost" onClick={() => setShowTimerDialog(false)}>
-              Cancel
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <StartSessionDialog
+        open={showTimerDialog}
+        setOpen={setShowTimerDialog}
+        imageId={imageId}
+      />
     </div>
   );
 }
