@@ -1,14 +1,14 @@
 // /app/api/images/[id]/route.ts
 import { prisma } from '@/lib/prisma';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase/server';
 
 export async function DELETE(
-  req: Request,
-  context: { params: { id: string } },
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const supabase = await createServerSupabase();
-  const { id } = context.params;
+  const { id } = await params;
 
   const image = await prisma.image.findUnique({ where: { id } });
   if (!image) return new NextResponse('Not found', { status: 404 });
