@@ -4,6 +4,7 @@ import Sidebar from '@/components/Sidebar';
 import ImageUploadPanel from '@/components/ImageUploadPanel';
 import { syncUserServer } from '@/lib/db/server/syncUser';
 import ImageGallery from '@/components/ImageGallery';
+import FullscreenImageViewer from '@/components/ImageGallery/FullScreenImageViewer';
 import SessionSetupPanel from '@/components/SessionSetupPanel';
 
 export default async function StudioPage() {
@@ -20,7 +21,7 @@ export default async function StudioPage() {
   return (
     <div className="flex h-screen flex-col md:flex-row">
       <Sidebar user={user} />
-      <main className="flex-1 space-y-6 overflow-y-auto p-4 md:p-8">
+      <main className="flex-1 overflow-y-auto p-4 md:p-8">
         <div>
           <h1 className="text-2xl font-bold">Welcome to your studio</h1>
           <p className="mt-2 text-muted-foreground">
@@ -30,6 +31,7 @@ export default async function StudioPage() {
         <SessionSetupPanel />
         <ImageUploadPanel userId={user.id} />
         <ImageGallery />
+        <FullscreenImageViewer />
       </main>
     </div>
   );
