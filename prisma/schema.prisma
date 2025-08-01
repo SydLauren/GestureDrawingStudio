@@ -1,4 +1,5 @@
 // prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,17 +10,37 @@ datasource db {
 }
 
 model User {
-  id     String  @id            // Supabase auth ID (UUID)
+  id     String  @id // Supabase auth ID (UUID)
   email  String?
   images Image[]
+  tags   Tag[]   // All tags created by this user
 }
 
 model Image {
-  id        String   @id @default(uuid())
+  id        String      @id @default(uuid())
   userId    String
   name      String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User        @relation(fields: [userId], references: [id])
   path      String
-  tags      String[] // text[] in Postgres
-  createdAt DateTime @default(now())
+  createdAt DateTime    @default(now())
+  tags      ImageTag[]  // Reverse relation to tags
+}
+
+model Tag {
+  id     String      @id @default(cuid())
+  name   String
+  userId String
+  user   User        @relation(fields: [userId], references: [id])
+  images ImageTag[]  // Reverse relation to images
+}
+
+model ImageTag {
+  id      String  @id @default(cuid())
+  imageId String
+  tagId   String
+
+  image   Image   @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([imageId, tagId]) // Prevent duplicates
 }
