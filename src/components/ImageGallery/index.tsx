@@ -4,40 +4,127 @@ import { useUserImages } from '@/lib/db/hooks/useUserImages';
 import { Image } from '@prisma/client';
 import NextImage from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import AddTagsModal from './AddTagsModal';
 
 export default function ImageGallery() {
   const { data: images, isLoading, isError } = useUserImages();
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showAddTagsModal, setShowAddTagsModal] = useState(false);
+
+  const multiSelectMode = selected.size > 0;
+
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
   const handleImageClick = (id: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('imageId', id);
-    router.push(`?${params.toString()}`, { scroll: false });
+    if (multiSelectMode) {
+      toggleSelect(id);
+    } else {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('imageId', id);
+      router.push(`?${params.toString()}`, { scroll: false });
+    }
   };
 
   if (isLoading)
     return <p className="text-muted-foreground">Loading images...</p>;
   if (isError) return <p className="text-destructive">Failed to load images</p>;
-
   if (!images?.length) return <p>No images yet. Try uploading one!</p>;
 
+  const selectedCount = selected.size;
+
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-      {images.map((img: Image) => (
-        <div
-          key={img.id}
-          className="relative aspect-square cursor-pointer overflow-hidden rounded border"
-          onClick={() => handleImageClick(img.id)}
-        >
-          <NextImage
-            src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-images/${img.path}`}
-            alt={img.name}
-            fill
-            className="object-cover"
-          />
+    <>
+      {multiSelectMode && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded border bg-muted px-4 py-2 shadow-sm">
+          {/* Left */}
+          <span className="text-sm font-medium">
+            {selectedCount} image{selectedCount !== 1 ? 's' : ''} selected
+          </span>
+
+          {/* Center */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowAddTagsModal(true)}
+            className="mx-auto"
+          >
+            + Add Tags
+          </Button>
+
+          {/* Right */}
+          <div className="flex gap-4 text-sm font-medium text-primary">
+            <button
+              onClick={() => setSelected(new Set())}
+              className="underline underline-offset-4 hover:opacity-80"
+            >
+              Deselect all
+            </button>
+            <button
+              onClick={() => setSelected(new Set(images.map((img) => img.id)))}
+              className="underline underline-offset-4 hover:opacity-80"
+            >
+              Select all
+            </button>
+          </div>
         </div>
-      ))}
-    </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+        {images.map((img: Image) => {
+          const isSelected = selected.has(img.id);
+
+          return (
+            <div
+              key={img.id}
+              className={`group relative aspect-square cursor-pointer overflow-hidden rounded border transition ${
+                isSelected ? 'scale-95 bg-muted' : ''
+              }`}
+              onClick={() => handleImageClick(img.id)}
+            >
+              {/* Hover + Multi-Select Checkbox */}
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleSelect(img.id);
+                }}
+                className={`absolute left-2 top-2 z-10 rounded bg-white/70 p-1 opacity-0 transition group-hover:opacity-100 ${
+                  multiSelectMode ? '!opacity-100' : ''
+                }`}
+              >
+                <Checkbox checked={isSelected} />
+              </div>
+
+              <NextImage
+                src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-images/${img.path}`}
+                alt={img.name}
+                fill
+                className="object-cover"
+              />
+            </div>
+          );
+        })}
+      </div>
+      <AddTagsModal
+        open={showAddTagsModal}
+        setOpen={setShowAddTagsModal}
+        selectedImageIds={Array.from(selected)}
+      />
+    </>
   );
 }

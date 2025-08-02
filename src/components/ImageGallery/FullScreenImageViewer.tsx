@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useUserImages } from '@/lib/db/hooks/useUserImages';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import { useRemoveTagFromImage } from '@/lib/db/hooks/useRemoveTagFromImage';
 import Image from 'next/image';
 
 import StartSessionDialog from './StartSessionDialog';
@@ -18,6 +19,7 @@ export default function FullscreenImageViewer() {
 
   const [showTimerDialog, setShowTimerDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [, setEditingTags] = useState(false);
 
   const image = images?.find((img) => img.id === imageId);
 
@@ -64,36 +66,72 @@ export default function FullscreenImageViewer() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [searchParams, images, closeViewer, showNextImage, showPrevImage]);
 
+  const removeTagMutation = useRemoveTagFromImage();
+
+  const handleRemoveTag = (tagId: string) => {
+    if (!image) return;
+    removeTagMutation.mutate({
+      imageId: image.id,
+      tagId,
+    });
+  };
+
   if (!imageId || !image) return null;
 
   return (
     <div className="relative flex h-full max-h-[90vh] w-full max-w-6xl items-center justify-center">
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
         {/* Header Bar */}
-        <div className="absolute left-0 top-0 z-50 flex w-full items-center justify-between bg-black/70 px-4 py-2 text-white">
-          <h2 className="max-w-[60%] truncate text-lg font-semibold">
+        <div className="absolute left-0 top-0 z-50 flex w-full items-center justify-center bg-black/70 px-4 py-2 text-white">
+          {/* Left side (title) */}
+          <div className="absolute left-4 top-2 max-w-[60%] truncate text-lg font-semibold">
             {image.name || 'Untitled'}
-          </h2>
-          <div className="flex items-center gap-2">
+          </div>
+          {/* Center (tags) */}
+          <div className="flex flex-wrap items-center gap-2">
+            {image.imageTags?.map((imageTag) => (
+              <div
+                key={imageTag.tag.id}
+                className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-sm"
+              >
+                <span>{imageTag.tag.name}</span>
+                <button
+                  onClick={() => handleRemoveTag(imageTag.tag.id)}
+                  className="text-white hover:text-red-300"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
             <button
-              onClick={() => setShowTimerDialog(true)}
-              className="rounded bg-white/10 p-2 text-white transition hover:bg-white/20"
+              onClick={() => setEditingTags(true)}
+              className="rounded-full bg-white/10 px-2 py-1 text-sm text-white hover:bg-white/20"
             >
-              🖌 Start Drawing
+              + Add Tag
             </button>
-            <button
-              onClick={closeViewer}
-              className="rounded p-2 hover:bg-white/10"
-            >
-              ✕
-            </button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setShowDeleteConfirm(true)}
-            >
-              Delete
-            </Button>
+          </div>
+          <div className="absolute right-4 top-2 flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowTimerDialog(true)}
+                className="rounded bg-white/10 p-2 text-white transition hover:bg-white/20"
+              >
+                🖌 Start Drawing
+              </button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setShowDeleteConfirm(true)}
+              >
+                Delete
+              </Button>
+              <button
+                onClick={closeViewer}
+                className="rounded p-2 hover:bg-white/10"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         </div>
         {/* Left arrow */}

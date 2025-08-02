@@ -37,6 +37,13 @@ export async function GET(): Promise<NextResponse<Image[] | string>> {
 
   const images = await prisma.image.findMany({
     where: { userId: user.id },
+    include: {
+      imageTags: {
+        include: {
+          tag: true,
+        },
+      },
+    },
     orderBy: { createdAt: 'desc' },
   });
 

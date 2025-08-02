@@ -2,16 +2,17 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 
 export default function LoginButton() {
   const router = useRouter();
 
   return (
-    <button
+    <Button
       onClick={() => router.push('/login')}
-      className="rounded-md bg-blue-600 px-6 py-3 text-lg font-semibold text-white hover:bg-blue-700"
+      className="rounded-md px-6 py-3 text-lg"
     >
       Login / Sign Up
-    </button>
+    </Button>
   );
 }

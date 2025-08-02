@@ -23,7 +23,7 @@ model Image {
   user      User        @relation(fields: [userId], references: [id])
   path      String
   createdAt DateTime    @default(now())
-  tags      ImageTag[]  // Reverse relation to tags
+  imageTags      ImageTag[]  // Reverse relation to tags
 }
 
 model Tag {
@@ -31,7 +31,7 @@ model Tag {
   name   String
   userId String
   user   User        @relation(fields: [userId], references: [id])
-  images ImageTag[]  // Reverse relation to images
+  imageTags ImageTag[]  // Reverse relation to images
 }
 
 model ImageTag {
