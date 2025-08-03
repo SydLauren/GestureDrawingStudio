@@ -1,13 +1,14 @@
 'use client';
 
 import { useUserImages } from '@/lib/db/hooks/useUserImages';
-import { Image } from '@prisma/client';
+import { ImageWithTags } from '@/lib/db/hooks/useUserImages';
 import NextImage from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import AddTagsModal from './AddTagsModal';
+import ImageTagManager from '../tags/ImageTagManager';
 
 export default function ImageGallery() {
   const { data: images, isLoading, isError } = useUserImages();
@@ -86,7 +87,7 @@ export default function ImageGallery() {
       )}
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-        {images.map((img: Image) => {
+        {images.map((img: ImageWithTags) => {
           const isSelected = selected.has(img.id);
 
           return (
@@ -97,7 +98,7 @@ export default function ImageGallery() {
               }`}
               onClick={() => handleImageClick(img.id)}
             >
-              {/* Hover + Multi-Select Checkbox */}
+              {/* Checkbox: top-left */}
               <div
                 onClick={(e) => {
                   e.stopPropagation();
@@ -110,6 +111,18 @@ export default function ImageGallery() {
                 <Checkbox checked={isSelected} />
               </div>
 
+              {/* Tag icon: top-right */}
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="absolute right-2 top-2 z-10 rounded bg-black/60 p-1 text-white opacity-0 transition group-hover:opacity-100"
+              >
+                <ImageTagManager
+                  imageIds={[img.id]}
+                  initialSelectedTags={img.imageTags?.map((it) => it.tag)}
+                />
+              </div>
+
+              {/* Image */}
               <NextImage
                 src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-images/${img.path}`}
                 alt={img.name}
@@ -120,6 +133,7 @@ export default function ImageGallery() {
           );
         })}
       </div>
+
       <AddTagsModal
         open={showAddTagsModal}
         setOpen={setShowAddTagsModal}

@@ -7,7 +7,6 @@ export async function uploadImage(file: File, userId: string) {
   const safeName = sanitizeFilename(file.name);
   const filePath = `${userId}/${Date.now()}-${safeName}`;
 
-  console.log('🚀 ~ uploadImage ~ filePath:', filePath);
   const { data, error } = await supabase.storage
     .from('user-images')
     .upload(filePath, file, {
@@ -17,7 +16,6 @@ export async function uploadImage(file: File, userId: string) {
 
   if (error) throw error;
 
-  console.log('🚀 ~ uploadImage ~ data:', data);
   return {
     path: data.path,
     fullPath: `user-images/${data.path}`,

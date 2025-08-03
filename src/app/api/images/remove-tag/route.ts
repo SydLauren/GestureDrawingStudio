@@ -27,13 +27,10 @@ export async function DELETE(req: NextRequest) {
       userId: user.id,
     },
   });
-  console.log('🚀 ~ DELETE ~ image:', image);
 
   if (!image) {
     return new NextResponse('Image not found', { status: 404 });
   }
-
-  console.log('Removing tag', { imageId, tagId });
 
   // Remove the tag association
   const result = await prisma.imageTag.deleteMany({
@@ -42,7 +39,6 @@ export async function DELETE(req: NextRequest) {
       tagId,
     },
   });
-  console.log('🚀 ~ DELETE ~ result:', result);
 
   if (result.count === 0) {
     return new NextResponse('Tag not found on image', { status: 404 });

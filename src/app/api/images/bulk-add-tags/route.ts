@@ -1,4 +1,3 @@
-// app/api/images/bulk-add-tags/route.ts
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createApiSupabase } from '@/lib/supabase/api';
@@ -15,59 +14,76 @@ export async function POST(req: Request) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
-  const { imageIds, tags } = await req.json(); // e.g. ['abc', 'def'], ['pose', 'dynamic']
+  const { imageIds, tags, tagsToRemove } = await req.json();
 
   if (!Array.isArray(imageIds) || !Array.isArray(tags)) {
     return new NextResponse('Invalid input', { status: 400 });
   }
 
-  // 1. Find or create the tags for this user
+  // Normalize and deduplicate
+  const tagNames = tags.map((tag) => tag.name.trim().toLowerCase());
+  const uniqueTagNames = [...new Set(tagNames)];
+
+  // 1. Find existing tags by name
   const existingTags = await prisma.tag.findMany({
     where: {
       userId: user.id,
-      id: { in: tags.map((tag) => tag.id).filter(Boolean) },
-    }, // handle undefined ids
+      name: { in: uniqueTagNames },
+    },
   });
 
-  const existingTagIds = new Set(existingTags.map((t) => t.id));
-  const newTags = tags.filter((tag) => !existingTagIds.has(tag.id));
+  const existingTagNames = new Set(
+    existingTags.map((t) => t.name.toLowerCase()),
+  );
+  const newTagNames = uniqueTagNames.filter(
+    (name) => !existingTagNames.has(name),
+  );
 
+  // 2. Create any new tags
   const createdTags = await prisma.$transaction(
-    newTags.map((tag) =>
+    newTagNames.map((name) =>
       prisma.tag.create({
-        data: { name: tag.name, userId: user.id },
+        data: { name, userId: user.id },
       }),
     ),
   );
-  console.log('🚀 ~ POST ~ createdTags:', createdTags);
 
-  const allTags = [...existingTags, ...createdTags];
-  console.log('Creating imageTag links for:', {
-    imageIds,
-    tagIds: allTags.map((t) => t.id),
-  });
+  const allTagsToAdd = [...existingTags, ...createdTags];
 
-  // 2. Create ImageTag links (ignore duplicates)
-  const result = await prisma.$transaction(
-    imageIds.flatMap((imageId) =>
-      allTags.map((tag) =>
-        prisma.imageTag.upsert({
-          where: {
-            imageId_tagId: {
-              imageId,
-              tagId: tag.id,
-            },
-          },
-          update: {}, // do nothing if exists
-          create: {
+  // 3. Create ImageTag links (ignore duplicates)
+  const addImageTagOps = imageIds.flatMap((imageId) =>
+    allTagsToAdd.map((tag) =>
+      prisma.imageTag.upsert({
+        where: {
+          imageId_tagId: {
             imageId,
             tagId: tag.id,
           },
-        }),
-      ),
+        },
+        update: {}, // do nothing if exists
+        create: {
+          imageId,
+          tagId: tag.id,
+        },
+      }),
     ),
   );
-  console.log('🚀 ~ POST ~ result:', result);
+
+  // 4. Remove ImageTag links
+  const removeImageTagOps =
+    Array.isArray(tagsToRemove) && tagsToRemove.length > 0
+      ? [
+          prisma.imageTag.deleteMany({
+            where: {
+              imageId: { in: imageIds },
+              tagId: { in: tagsToRemove },
+            },
+          }),
+        ]
+      : [];
+
+  // 5. Execute all operations
+  await prisma.$transaction([...addImageTagOps, ...removeImageTagOps]);
 
   return NextResponse.json({ success: true });
 }

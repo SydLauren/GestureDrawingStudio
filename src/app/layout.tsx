@@ -24,6 +24,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} antialiased`}>
         <ReactQueryProvider>
+          <div className="fixed h-12 w-full bg-foreground" />
           {children}
           <Toaster />
           <ReactQueryDevtools initialIsOpen={false} />

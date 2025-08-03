@@ -51,7 +51,6 @@ export default function AddTagsModal({
       !selectedTags.some((t) => t.id === tag.id)
     );
   });
-  console.log('🚀 ~ filteredTags:', filteredTags);
 
   const addTagsMutation = useMutation({
     mutationFn: (tags: Tag[]) => addTagsToImages(selectedImageIds, tags),

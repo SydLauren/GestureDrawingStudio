@@ -4,12 +4,12 @@ import { useState, useCallback, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useUserImages } from '@/lib/db/hooks/useUserImages';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
-import { useRemoveTagFromImage } from '@/lib/db/hooks/useRemoveTagFromImage';
 import Image from 'next/image';
 
 import StartSessionDialog from './StartSessionDialog';
 import { Button } from '../ui/button';
 import DeleteImageAlert from './DeleteImageAlert';
+import ImageTagManager from '../tags/ImageTagManager';
 
 export default function FullscreenImageViewer() {
   const searchParams = useSearchParams();
@@ -19,7 +19,6 @@ export default function FullscreenImageViewer() {
 
   const [showTimerDialog, setShowTimerDialog] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [, setEditingTags] = useState(false);
 
   const image = images?.find((img) => img.id === imageId);
 
@@ -66,16 +65,6 @@ export default function FullscreenImageViewer() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [searchParams, images, closeViewer, showNextImage, showPrevImage]);
 
-  const removeTagMutation = useRemoveTagFromImage();
-
-  const handleRemoveTag = (tagId: string) => {
-    if (!image) return;
-    removeTagMutation.mutate({
-      imageId: image.id,
-      tagId,
-    });
-  };
-
   if (!imageId || !image) return null;
 
   return (
@@ -88,28 +77,10 @@ export default function FullscreenImageViewer() {
             {image.name || 'Untitled'}
           </div>
           {/* Center (tags) */}
-          <div className="flex flex-wrap items-center gap-2">
-            {image.imageTags?.map((imageTag) => (
-              <div
-                key={imageTag.tag.id}
-                className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-sm"
-              >
-                <span>{imageTag.tag.name}</span>
-                <button
-                  onClick={() => handleRemoveTag(imageTag.tag.id)}
-                  className="text-white hover:text-red-300"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-            <button
-              onClick={() => setEditingTags(true)}
-              className="rounded-full bg-white/10 px-2 py-1 text-sm text-white hover:bg-white/20"
-            >
-              + Add Tag
-            </button>
-          </div>
+          <ImageTagManager
+            imageIds={[image.id]}
+            initialSelectedTags={image.imageTags.map((it) => it.tag)}
+          />
           <div className="absolute right-4 top-2 flex items-center gap-2">
             <div className="flex items-center gap-2">
               <button

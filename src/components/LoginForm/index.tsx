@@ -39,7 +39,6 @@ export default function LoginForm() {
         },
       });
 
-      console.log('🚀 ~ handleEmailAuth ~ result:', result);
       if (result.error) {
         setError(result.error.message);
       } else if (result.data.session) {
