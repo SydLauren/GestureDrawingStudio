@@ -1,6 +1,13 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  Dispatch,
+  SetStateAction,
+} from 'react';
 import { TagIcon, PlusIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -15,30 +22,48 @@ import { Tag } from '@prisma/client';
 
 export type TagDisplayMode = 'condensed' | 'list';
 
-type TagDropdownProps = {
+interface TagDropdownProps {
   allTags: Tag[];
   selectedTags: Tag[];
   onToggle: (tagId: string) => void;
   onClose: () => void;
   onCreateNewTag?: (name: string) => void;
   displayMode?: TagDisplayMode;
-};
+}
+
+interface ActualDropdownProps extends TagDropdownProps {
+  open: boolean;
+  setOpen: Dispatch<SetStateAction<boolean>>;
+}
 
 export function TagDropdown(props: TagDropdownProps) {
-  const { displayMode = 'condensed' } = props;
+  const [open, setOpen] = useState(false);
 
-  if (displayMode === 'list') return <ListTagDropdown {...props} />;
-  return <CondensedTagDropdown {...props} />;
+  const { onClose, displayMode } = props;
+
+  useEffect(() => {
+    window.addEventListener('keypress', (e) => {
+      if (e.code === 'Enter') {
+        setOpen(false);
+        onClose();
+      }
+    });
+  }, [onClose]);
+
+  if (displayMode === 'list')
+    return <ListTagDropdown {...props} open={open} setOpen={setOpen} />;
+  return <CondensedTagDropdown {...props} open={open} setOpen={setOpen} />;
 }
 
 function CondensedTagDropdown({
+  open,
+  setOpen,
   allTags,
   selectedTags,
   onToggle,
   onClose,
   onCreateNewTag,
-}: TagDropdownProps) {
-  const [open, setOpen] = useState(false);
+}: ActualDropdownProps) {
   const [search, setSearch] = useState('');
 
   return (
@@ -76,13 +101,14 @@ function CondensedTagDropdown({
 
 // TODO: Come back to this
 function ListTagDropdown({
+  open,
+  setOpen,
   allTags,
   selectedTags,
   onToggle,
   onClose,
   onCreateNewTag,
-}: TagDropdownProps) {
-  const [open, setOpen] = useState(false);
+}: ActualDropdownProps) {
   const [search, setSearch] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const [maxVisible, setMaxVisible] = useState<number>(selectedTags.length);

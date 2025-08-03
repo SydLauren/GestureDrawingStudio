@@ -7,10 +7,12 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
+    "ts-lint": "tsc --noEmit",
     "format": "prettier --write .",
     "e2e": "npx playwright test && npx playwright show-report",
     "storybook": "storybook dev -p 6006 -c ./src/.storybook",
-    "build-storybook": "storybook build -c ./src/.storybook"
+    "build-storybook": "storybook build -c ./src/.storybook",
+    "precommit": "npm run format && npm run ts-lint && npm run lint"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
