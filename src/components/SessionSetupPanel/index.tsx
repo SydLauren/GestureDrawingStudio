@@ -42,7 +42,7 @@ export default function SessionSetupPanel() {
   const totalDisplay = formatSecondsVerbose(totalSeconds); // e.g. "6 minutes, 30 seconds"
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 rounded-md border border-amber-400 bg-orange-100 p-4">
       <div>
         <h2 className="mb-2 text-lg font-medium">Interval</h2>
         <div className="flex flex-wrap gap-2">

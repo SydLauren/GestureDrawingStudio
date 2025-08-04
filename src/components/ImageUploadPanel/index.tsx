@@ -13,7 +13,8 @@ type Props = {
 };
 
 export default function ImageUploadPanel({ userId }: Props) {
-  const [isUploading, setIsUploading] = useState(false);
+  //TODO: Add a progress bar?
+  const [, setIsUploading] = useState(false);
   const createImage = useCreateImage();
   const queryClient = useQueryClient();
 
@@ -46,12 +47,16 @@ export default function ImageUploadPanel({ userId }: Props) {
   };
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-medium">Upload Images</h2>
+    <>
       <ImageUploader onFilesSelected={handleUpload} />
-      {isUploading && (
-        <p className="text-sm text-muted-foreground">Uploading...</p>
-      )}
-    </div>
+    </>
+    // return (
+    //   <div className="space-y-4">
+    //     <h2 className="text-lg font-medium">Upload Images</h2>
+    //     <ImageUploader onFilesSelected={handleUpload} />
+    //     {isUploading && (
+    //       <p className="text-sm text-muted-foreground">Uploading...</p>
+    //     )}
+    //   </div>
   );
 }

@@ -29,8 +29,10 @@ export default async function StudioPage() {
           </p>
         </div>
         <SessionSetupPanel />
-        <ImageUploadPanel userId={user.id} />
-        <ImageGallery />
+        <div className={'relative mt-8'}>
+          <ImageUploadPanel userId={user.id} />
+          <ImageGallery />
+        </div>
         <FullscreenImageViewer />
       </main>
     </div>

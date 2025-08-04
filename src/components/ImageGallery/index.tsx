@@ -9,9 +9,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import AddTagsModal from './AddTagsModal';
 import ImageTagManager from '../tags/ImageTagManager';
+import { useGlobalFileDragDetection } from '@/hooks/useGlobalFileDragDetection';
+import { useAtomValue } from 'jotai';
+import imageTagDropdownOpen from '@/lib/atoms/imageTagDropdownOpen';
+import { twMerge } from 'tailwind-merge';
 
 export default function ImageGallery() {
   const { data: images, isLoading, isError } = useUserImages();
+  useGlobalFileDragDetection();
+  const tagsDropdownOpen = useAtomValue(imageTagDropdownOpen);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -85,53 +91,59 @@ export default function ImageGallery() {
           </div>
         </div>
       )}
+      <div>
+        <div
+          className={twMerge(
+            'grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4',
+            tagsDropdownOpen && 'pointer-events-none',
+          )}
+        >
+          {images.map((img: ImageWithTags) => {
+            const isSelected = selected.has(img.id);
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-        {images.map((img: ImageWithTags) => {
-          const isSelected = selected.has(img.id);
-
-          return (
-            <div
-              key={img.id}
-              className={`group relative aspect-square cursor-pointer overflow-hidden rounded border transition ${
-                isSelected ? 'scale-95 bg-muted' : ''
-              }`}
-              onClick={() => handleImageClick(img.id)}
-            >
-              {/* Checkbox: top-left */}
+            return (
               <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleSelect(img.id);
-                }}
-                className={`absolute left-2 top-2 z-10 rounded bg-white/70 p-1 opacity-0 transition group-hover:opacity-100 ${
-                  multiSelectMode ? '!opacity-100' : ''
+                key={img.id}
+                className={`group relative aspect-square cursor-pointer overflow-hidden rounded border transition ${
+                  isSelected ? 'scale-95 bg-muted' : ''
                 }`}
+                onClick={() => handleImageClick(img.id)}
               >
-                <Checkbox checked={isSelected} />
-              </div>
+                {/* Checkbox: top-left */}
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSelect(img.id);
+                  }}
+                  className={`absolute left-2 top-2 z-10 rounded bg-white/70 p-1 opacity-0 transition group-hover:opacity-100 ${
+                    multiSelectMode ? '!opacity-100' : ''
+                  }`}
+                >
+                  <Checkbox checked={isSelected} />
+                </div>
 
-              {/* Tag icon: top-right */}
-              <div
-                onClick={(e) => e.stopPropagation()}
-                className="absolute right-2 top-2 z-10 rounded bg-black/60 p-1 text-white opacity-0 transition group-hover:opacity-100"
-              >
-                <ImageTagManager
-                  imageIds={[img.id]}
-                  initialSelectedTags={img.imageTags?.map((it) => it.tag)}
+                {/* Tag icon: top-right */}
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-2 top-2 z-10 rounded bg-black/60 p-1 text-white opacity-0 transition group-hover:opacity-100"
+                >
+                  <ImageTagManager
+                    imageIds={[img.id]}
+                    initialSelectedTags={img.imageTags?.map((it) => it.tag)}
+                  />
+                </div>
+
+                {/* Image */}
+                <NextImage
+                  src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-images/${img.path}`}
+                  alt={img.name}
+                  fill
+                  className="object-cover"
                 />
               </div>
-
-              {/* Image */}
-              <NextImage
-                src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-images/${img.path}`}
-                alt={img.name}
-                fill
-                className="object-cover"
-              />
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       <AddTagsModal

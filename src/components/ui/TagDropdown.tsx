@@ -19,6 +19,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tag } from '@prisma/client';
+import { useSetAtom } from 'jotai';
+import imageTagDropdownOpen from '@/lib/atoms/imageTagDropdownOpen';
 
 export type TagDisplayMode = 'condensed' | 'list';
 
@@ -38,6 +40,10 @@ interface ActualDropdownProps extends TagDropdownProps {
 
 export function TagDropdown(props: TagDropdownProps) {
   const [open, setOpen] = useState(false);
+  const setImageTagDropdownOpen = useSetAtom(imageTagDropdownOpen);
+  useEffect(() => {
+    setImageTagDropdownOpen(open);
+  }, [open, setImageTagDropdownOpen]);
 
   const { onClose, displayMode } = props;
 
@@ -271,7 +277,7 @@ function TagDropdownContent({
               (selectedTag) => selectedTag.id === tag.id,
             ) > -1;
           return (
-            <button
+            <div
               key={tag.id}
               onClick={(e) => {
                 e.preventDefault();
@@ -287,7 +293,7 @@ function TagDropdownContent({
                 className="pointer-events-none"
               />
               <span className="truncate">{tag.name}</span>
-            </button>
+            </div>
           );
         })}
 

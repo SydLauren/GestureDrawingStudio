@@ -4,6 +4,7 @@ import './globals.css';
 import ReactQueryProvider from '@/lib/react-query/ReactQueryProvider';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from '@/components/ui/sonner';
+import JotaiProvider from '@/providers/JotaiProvider';
 
 const geistSans = Noto_Sans({
   variable: '--font-noto-sans',
@@ -23,12 +24,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} antialiased`}>
-        <ReactQueryProvider>
-          <div className="fixed h-12 w-full bg-foreground" />
-          {children}
-          <Toaster />
-          <ReactQueryDevtools initialIsOpen={false} />
-        </ReactQueryProvider>
+        <JotaiProvider>
+          <ReactQueryProvider>
+            <div className="fixed h-12 w-full bg-foreground" />
+            {children}
+            <Toaster />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </ReactQueryProvider>
+        </JotaiProvider>
       </body>
     </html>
   );
