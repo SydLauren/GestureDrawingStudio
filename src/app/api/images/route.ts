@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createApiSupabase } from '@/lib/supabase/api';
-import { Image } from '@prisma/client';
+import { Image, Prisma } from '@prisma/client';
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -23,7 +23,9 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET(): Promise<NextResponse<Image[] | string>> {
+export async function GET(
+  req: Request,
+): Promise<NextResponse<Image[] | string>> {
   const cookieStore = await cookies();
   const supabase = createApiSupabase(cookieStore);
 
@@ -35,8 +37,26 @@ export async function GET(): Promise<NextResponse<Image[] | string>> {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
+  // Parse query parameters
+  const { searchParams } = new URL(req.url);
+  const tagIdsParam = searchParams.get('tagIds');
+  const tagIds = tagIdsParam ? tagIdsParam.split(',') : [];
+
+  // Build the where clause
+  const whereClause: Prisma.ImageWhereInput = { userId: user.id };
+
+  if (tagIds.length > 0) {
+    whereClause.imageTags = {
+      some: {
+        tagId: {
+          in: tagIds,
+        },
+      },
+    };
+  }
+
   const images = await prisma.image.findMany({
-    where: { userId: user.id },
+    where: whereClause,
     include: {
       imageTags: {
         include: {

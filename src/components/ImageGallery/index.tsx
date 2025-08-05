@@ -1,10 +1,10 @@
 'use client';
 
-import { useUserImages } from '@/lib/db/hooks/useUserImages';
+import { ImageFilters, useUserImages } from '@/lib/db/hooks/useUserImages';
 import { ImageWithTags } from '@/lib/db/hooks/useUserImages';
 import NextImage from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import AddTagsModal from './AddTagsModal';
@@ -14,14 +14,23 @@ import { useAtomValue } from 'jotai';
 import imageTagDropdownOpen from '@/lib/atoms/imageTagDropdownOpen';
 import { twMerge } from 'tailwind-merge';
 
-export default function ImageGallery() {
-  const { data: images, isLoading, isError } = useUserImages();
+interface Props {
+  selected: Set<string>;
+  setSelected: Dispatch<SetStateAction<Set<string>>>;
+  imageFilters?: ImageFilters;
+}
+
+export default function ImageGallery({
+  selected,
+  setSelected,
+  imageFilters,
+}: Props) {
+  const { data: images, isLoading, isError } = useUserImages(imageFilters);
   useGlobalFileDragDetection();
   const tagsDropdownOpen = useAtomValue(imageTagDropdownOpen);
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showAddTagsModal, setShowAddTagsModal] = useState(false);
 
   const multiSelectMode = selected.size > 0;

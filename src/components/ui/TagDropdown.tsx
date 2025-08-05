@@ -38,7 +38,7 @@ interface ActualDropdownProps extends TagDropdownProps {
   setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export function TagDropdown(props: TagDropdownProps) {
+export const TagDropdown = (props: TagDropdownProps) => {
   const [open, setOpen] = useState(false);
   const setImageTagDropdownOpen = useSetAtom(imageTagDropdownOpen);
   useEffect(() => {
@@ -59,7 +59,7 @@ export function TagDropdown(props: TagDropdownProps) {
   if (displayMode === 'list')
     return <ListTagDropdown {...props} open={open} setOpen={setOpen} />;
   return <CondensedTagDropdown {...props} open={open} setOpen={setOpen} />;
-}
+};
 
 function CondensedTagDropdown({
   open,
@@ -209,7 +209,7 @@ function ListTagDropdown({
   );
 }
 
-function TagDropdownContent({
+export const TagDropdownContent = ({
   search,
   setSearch,
   allTags,
@@ -223,7 +223,7 @@ function TagDropdownContent({
   selectedTags: Tag[];
   onToggle: (tagId: string) => void;
   onCreateNewTag?: (name: string) => void;
-}) {
+}) => {
   const mergedTags = useMemo(() => {
     const tagMap = new Map<string, Tag>();
 
@@ -321,4 +321,6 @@ function TagDropdownContent({
       </div>
     </div>
   );
-}
+};
+
+export default TagDropdown;

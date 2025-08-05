@@ -12,11 +12,22 @@ export type ImageWithTags = Prisma.ImageGetPayload<{
   };
 }>;
 
-export function useUserImages() {
+export interface ImageFilters {
+  tagIds?: string[];
+}
+
+export function useUserImages(filters?: ImageFilters) {
   return useQuery<ImageWithTags[]>({
-    queryKey: [Qkey.UserImages],
+    queryKey: [Qkey.UserImages, filters],
     queryFn: async () => {
-      const res = await fetch('/api/images');
+      const searchParams = new URLSearchParams();
+
+      if (filters?.tagIds && filters.tagIds.length > 0) {
+        searchParams.append('tagIds', filters.tagIds.join(','));
+      }
+
+      const url = `/api/images${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+      const res = await fetch(url);
       if (!res.ok) throw new Error('Failed to load images');
       return res.json() as Promise<ImageWithTags[]>;
     },
