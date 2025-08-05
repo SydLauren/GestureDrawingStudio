@@ -38,7 +38,9 @@ export default function ImageUploader({ onFilesSelected }: Props) {
     <div
       className={twMerge(
         'absolute z-30 h-full w-full rounded-md border-2 p-6 text-center transition-colors',
-        dragOver ? 'border-dashed border-blue-500 bg-blue-50' : 'border-muted',
+        dragOver
+          ? 'border-dashed border-blue-500 bg-blue-50/80'
+          : 'border-muted',
       )}
       onDrop={handleDrop}
     >
