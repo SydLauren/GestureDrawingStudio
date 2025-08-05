@@ -5,6 +5,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TagDisplayMode, TagDropdown } from '@/components/ui/TagDropdown';
 import { toast } from 'sonner';
 import { Tag } from '@prisma/client';
+import { fetchAllTags } from '@/lib/db/tags';
+import Qkey from '@/lib/queryKeys';
 
 type ImageTagManagerProps = {
   imageIds: string[];
@@ -25,12 +27,8 @@ export default function ImageTagManager({
   }, [initialSelectedTags]);
 
   const { data: allTags = [] } = useQuery<Tag[]>({
-    queryKey: ['user-tags'],
-    queryFn: async () => {
-      const res = await fetch('/api/tags');
-      if (!res.ok) throw new Error('Failed to load tags');
-      return res.json();
-    },
+    queryKey: [Qkey.UserTags],
+    queryFn: fetchAllTags,
   });
 
   const bulkMutation = useMutation({
@@ -53,8 +51,8 @@ export default function ImageTagManager({
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-tags'] });
-      queryClient.invalidateQueries({ queryKey: ['user-images'] });
+      queryClient.invalidateQueries({ queryKey: [Qkey.UserTags] });
+      queryClient.invalidateQueries({ queryKey: [Qkey.UserTags] });
       toast.success('Tags updated');
     },
     onError: () => {

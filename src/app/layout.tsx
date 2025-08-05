@@ -5,7 +5,6 @@ import ReactQueryProvider from '@/lib/react-query/ReactQueryProvider';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from '@/components/ui/sonner';
 import JotaiProvider from '@/providers/JotaiProvider';
-import HeaderBar from '@/components/HeaderBar';
 
 const geistSans = Noto_Sans({
   variable: '--font-noto-sans',
@@ -27,7 +26,6 @@ export default function RootLayout({
       <body className={`${geistSans.variable} antialiased`}>
         <JotaiProvider>
           <ReactQueryProvider>
-            <HeaderBar />
             {children}
             <Toaster />
             <ReactQueryDevtools initialIsOpen={false} />

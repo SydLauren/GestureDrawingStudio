@@ -11,19 +11,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAtomValue } from 'jotai';
 import Flex from '../ui/Flex';
-import { createBrowserSupabase } from '@/lib/supabase/browser';
+interface Props {
+  onSignOut: () => void;
+}
 
-export default function AvatarDropdown() {
+export default function AvatarDropdown({ onSignOut }: Props) {
   const user = useAtomValue(userAtom);
-  const supabase = createBrowserSupabase();
-
   const avatarUrl = user?.user_metadata.avatar_url;
   const name = user?.user_metadata.full_name || user?.email || 'User';
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/';
-  };
 
   return (
     <DropdownMenu>
@@ -36,7 +31,7 @@ export default function AvatarDropdown() {
         </Flex>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onSelect={handleSignOut}>
+        <DropdownMenuItem onSelect={onSignOut}>
           <LogOut />
           <span>Log out</span>
         </DropdownMenuItem>

@@ -1,4 +1,4 @@
-import QUERY_KEYS from '@/lib/queryKeys';
+import Qkey from '@/lib/queryKeys';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useEffect } from 'react';
@@ -8,7 +8,7 @@ const useHealthCheck = (interval: number = 10000) => {
   const { toast } = useToast();
 
   const { error } = useQuery({
-    queryKey: [QUERY_KEYS.HEALTH_CHECK],
+    queryKey: [Qkey.HealthCheck],
     queryFn: async () => {
       const response = await axios.get('/api/health');
       if (response.status !== 200) {

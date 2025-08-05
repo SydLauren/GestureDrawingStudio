@@ -1,4 +1,3 @@
-// app/studio/session/page.tsx (or wherever it's located)
 'use client';
 
 import { useEffect, useState } from 'react';

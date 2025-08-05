@@ -1,40 +1,47 @@
-// components/sidebar.tsx
 'use client';
 
-import { Button } from '@/components/ui/button';
-import userAtom from '@/lib/atoms/userAtom';
-import { createBrowserSupabase } from '@/lib/supabase/browser';
-import { User } from '@supabase/supabase-js';
-import { useSetAtom } from 'jotai';
-import { useEffect } from 'react';
+import { Pen, Images } from 'lucide-react';
+import Flex from '../ui/Flex';
+import Link from 'next/link';
 
-type Props = {
-  user: User;
+enum PAGE {
+  studio = 'studio',
+  gallery = 'gallery',
+}
+const pages = [PAGE.studio, PAGE.gallery];
+
+const pageMetadata = {
+  [PAGE.studio]: {
+    icon: Pen,
+    displayName: 'Drawing Session',
+    path: '/studio/session-builder',
+  },
+  [PAGE.gallery]: {
+    icon: Images,
+    displayName: 'Reference Library',
+    path: '/studio/references',
+  },
 };
 
-export default function Sidebar({ user }: Props) {
-  const setUser = useSetAtom(userAtom);
-  const supabase = createBrowserSupabase();
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/';
-  };
-
-  useEffect(() => {
-    setUser(user);
-  });
-
+export default function Sidebar() {
   return (
-    <aside className="flex h-20 w-full items-center justify-between gap-2 bg-muted p-4 md:h-full md:w-64 md:flex-col md:items-start">
-      <Button
-        variant="outline"
-        size="sm"
-        className="whitespace-nowrap"
-        onClick={handleSignOut}
-      >
-        Sign out
-      </Button>
+    <aside className="flex h-20 w-full items-center bg-muted md:h-full md:w-64 md:flex-col md:items-start">
+      {pages.map((page) => {
+        const Icon = pageMetadata[page].icon;
+        return (
+          <Flex
+            key={page}
+            className="h-7 w-full cursor-pointer p-4 hover:bg-accent hover:text-accent-foreground"
+          >
+            <div className="flex items-center gap-2">
+              <Icon className="h-4" />
+              <Link href={`${pageMetadata[page].path}`}>
+                {pageMetadata[page].displayName}
+              </Link>
+            </div>
+          </Flex>
+        );
+      })}
     </aside>
   );
 }

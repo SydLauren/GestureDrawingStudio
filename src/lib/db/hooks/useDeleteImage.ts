@@ -1,4 +1,5 @@
 // /lib/db/hooks/useDeleteImage.ts
+import Qkey from '@/lib/queryKeys';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export function useDeleteImage() {
@@ -11,7 +12,7 @@ export function useDeleteImage() {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-images'] });
+      queryClient.invalidateQueries({ queryKey: [Qkey.UserImages] });
     },
   });
 }

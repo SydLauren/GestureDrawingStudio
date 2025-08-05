@@ -1,3 +1,4 @@
+import Qkey from '@/lib/queryKeys';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 export function useRemoveTagFromImage() {
@@ -24,7 +25,7 @@ export function useRemoveTagFromImage() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-images'] });
+      queryClient.invalidateQueries({ queryKey: [Qkey.UserImages] });
       toast.success('Tag removed');
     },
     onError: () => {

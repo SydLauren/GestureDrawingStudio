@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Tag } from '@prisma/client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { addTagsToImages, fetchAllTags, createTag } from '@/lib/db/tags';
+import Qkey from '@/lib/queryKeys';
 
 interface AddTagsModalProps {
   open: boolean;
@@ -31,7 +32,7 @@ export default function AddTagsModal({
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
 
   const { data: availableTags = [] } = useQuery({
-    queryKey: ['tags'],
+    queryKey: [Qkey.UserTags],
     queryFn: fetchAllTags,
   });
 
@@ -55,7 +56,7 @@ export default function AddTagsModal({
   const addTagsMutation = useMutation({
     mutationFn: (tags: Tag[]) => addTagsToImages(selectedImageIds, tags),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-images'] });
+      queryClient.invalidateQueries({ queryKey: [Qkey.UserImages] });
       onClose();
     },
   });

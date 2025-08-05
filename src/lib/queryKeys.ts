@@ -1,5 +1,7 @@
-const QUERY_KEYS = {
-  HEALTH_CHECK: 'healthCheck',
+const Qkey = {
+  HealthCheck: 'healthCheck',
+  UserTags: 'user-tags',
+  UserImages: 'user-images',
 };
 
-export default QUERY_KEYS;
+export default Qkey;

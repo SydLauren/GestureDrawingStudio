@@ -7,6 +7,7 @@ import { uploadImage } from '@/lib/storage/imageUpload';
 import { useCreateImage } from '@/lib/db/hooks/useCreateImage';
 import { sanitizeFilename } from '@/lib/utils/sanitizers';
 import { toast } from 'sonner';
+import Qkey from '@/lib/queryKeys';
 
 type Props = {
   userId: string;
@@ -33,7 +34,7 @@ export default function ImageUploadPanel({ userId }: Props) {
       }
 
       // ✅ Refresh the gallery
-      queryClient.invalidateQueries({ queryKey: ['user-images'] });
+      queryClient.invalidateQueries({ queryKey: [Qkey.UserImages] });
       toast.success('Upload complete!');
       // eslint-disable-next-line
     } catch (err: any) {
