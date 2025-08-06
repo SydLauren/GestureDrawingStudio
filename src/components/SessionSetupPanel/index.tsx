@@ -9,6 +9,8 @@ import {
   formatSecondsVerbose,
 } from '@/lib/utils/formatTime';
 import { useSessionStore } from '@/lib/store/session';
+import { ImageFilters } from '@/lib/db/hooks/useUserImages';
+import TagsFilterContainer from '../TagsFilter/TagsFilterContainer';
 
 const TIME_OPTIONS = [1200, 600, 300, 180, 120, 90, 60, 45, 30, 15, 2];
 const IMAGE_COUNT_OPTIONS = [1, 2, 5, 10, 20, 30, 40];
@@ -22,6 +24,7 @@ export enum TimerMode {
 export type SessionDefinition = {
   timePerImage: number; // seconds
   numberOfImages: number;
+  imageFilters?: ImageFilters;
   imageId?: string; // for starting with a specific image
   timerMode?: TimerMode;
 };
@@ -32,9 +35,17 @@ export default function SessionSetupPanel() {
 
   const [timePerImage, setTimePerImage] = useState(60);
   const [numberOfImages, setNumberOfImages] = useState(20);
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
 
   const handleStart = () => {
-    setConfig({ timePerImage, numberOfImages });
+    setConfig({
+      timePerImage,
+      numberOfImages,
+      imageFilters:
+        selectedTagIds.size > 0
+          ? { tagIds: Array.from(selectedTagIds) }
+          : undefined,
+    });
     router.push('/session');
   };
 
@@ -42,7 +53,7 @@ export default function SessionSetupPanel() {
   const totalDisplay = formatSecondsVerbose(totalSeconds); // e.g. "6 minutes, 30 seconds"
 
   return (
-    <div className="space-y-6 rounded-md border border-amber-400 bg-orange-100 p-4">
+    <div className="space-y-6 rounded-md border border-primary bg-muted p-4">
       <div>
         <h2 className="mb-2 text-lg font-medium">Interval</h2>
         <div className="flex flex-wrap gap-2">
@@ -72,6 +83,15 @@ export default function SessionSetupPanel() {
           ))}
           <span className="ml-2 self-center text-muted-foreground">images</span>
         </div>
+      </div>
+      <div>
+        <h2 className="mb-2 text-lg font-medium">
+          Show me references with any of these tags
+        </h2>
+        <TagsFilterContainer
+          selectedTagIds={selectedTagIds}
+          setSelectedTagIds={setSelectedTagIds}
+        />
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
         🕒 Total Time: {totalDisplay}

@@ -20,7 +20,9 @@ export default async function SessionBuilderPage() {
       <p className="mt-2 text-muted-foreground">
         Upload and manage your image library below.
       </p>
-      <SessionSetupPanel />
+      <div className="mt-8">
+        <SessionSetupPanel />
+      </div>
     </div>
   );
 }

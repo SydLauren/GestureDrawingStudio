@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import ImageGallery from '../ImageGallery';
 import FullscreenImageViewer from '../ImageGallery/FullScreenImageViewer';
 import { useMemo, useState } from 'react';
-import TagsFilter from './TagsFilter';
+import TagsFilter from '../TagsFilter/TagsFilter';
 import { useQuery } from '@tanstack/react-query';
 import { Tag } from '@prisma/client';
 import Qkey from '@/lib/queryKeys';

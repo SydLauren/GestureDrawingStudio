@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSessionStore } from '@/lib/store/session';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -11,9 +11,15 @@ import { constructImageUrlFromPath } from '@/lib/utils/images';
 export default function SessionPage() {
   const router = useRouter();
   const config = useSessionStore((s) => s.config);
-  const { data: allImages, isLoading, isError } = useUserImages();
+  const {
+    data: allImages,
+    isLoading,
+    isError,
+  } = useUserImages(config.imageFilters);
 
-  const [sessionImages, setSessionImages] = useState<string[]>([]);
+  const [availableImages, setAvailableImages] = useState<string[]>([]);
+  const [usedImages, setUsedImages] = useState<Set<string>>(new Set());
+  const [currentImage, setCurrentImage] = useState<string>('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -21,14 +27,39 @@ export default function SessionPage() {
 
   const mode = config?.timerMode ?? 'fixed';
 
-  // Generate a session image list once images are loaded
+  // Get next random image that hasn't been used
+  const getNextRandomImage = useCallback(() => {
+    if (!availableImages.length) return '';
+
+    // Get unused images
+    const unusedImages = availableImages.filter(
+      (path) => !usedImages.has(path),
+    );
+
+    // If all images have been used, reset the used set and use all images again
+    if (unusedImages.length === 0) {
+      setUsedImages(new Set());
+      const randomImage =
+        availableImages[Math.floor(Math.random() * availableImages.length)];
+      return randomImage;
+    }
+
+    // Pick random from unused images
+    const randomImage =
+      unusedImages[Math.floor(Math.random() * unusedImages.length)];
+    return randomImage;
+  }, [availableImages, usedImages]);
+
+  // Initialize available images and set first random image
   useEffect(() => {
     if (!config || !allImages?.length) return;
 
     if (config?.imageId) {
       const selected = allImages.find((img) => img.id === config.imageId);
       if (selected) {
-        setSessionImages([selected.path]);
+        setAvailableImages([selected.path]);
+        setCurrentImage(selected.path);
+        setUsedImages(new Set([selected.path]));
         setTimeLeft(config.timePerImage ?? 0);
       } else {
         console.warn('Image with ID not found in user images.');
@@ -36,21 +67,22 @@ export default function SessionPage() {
       return;
     }
 
-    // Default behavior for randomized session
-    const loopedImages = [];
-    const total = config.numberOfImages ?? 1;
+    // Create available images pool
+    const imagePaths = allImages.map((img) => img.path);
+    setAvailableImages(imagePaths);
 
-    for (let i = 0; i < total; i++) {
-      loopedImages.push(allImages[i % allImages.length].path);
-    }
-
-    setSessionImages(loopedImages);
+    // Set random first image
+    const randomImage =
+      imagePaths[Math.floor(Math.random() * imagePaths.length)];
+    setCurrentImage(randomImage);
+    setUsedImages(new Set([randomImage]));
     setTimeLeft(config.timePerImage ?? 0);
+    setCurrentIndex(0);
   }, [allImages, config]);
 
   // Timer logic
   useEffect(() => {
-    if (isPaused || !sessionImages.length) return;
+    if (isPaused || !availableImages.length) return;
 
     if (mode === 'countup') {
       // advance the timer to count up
@@ -61,47 +93,53 @@ export default function SessionPage() {
       return () => clearInterval(interval);
     }
 
-    if (timeLeft <= 0) {
-      if (currentIndex < sessionImages.length - 1) {
-        setCurrentIndex((i) => i + 1);
-        setShuffleKey(Date.now());
-        setTimeLeft(config?.timePerImage ?? 0);
-      } else {
-        router.push('/studio'); // session complete
-      }
+    // Only advance to next image when timer hits exactly 0
+    if (timeLeft === 0 && currentIndex < (config?.numberOfImages ?? 1) - 1) {
+      // Move to next image - pick random from unused pool
+      const randomImage = getNextRandomImage();
+      setCurrentImage(randomImage);
+      setUsedImages((prev) => new Set([...prev, randomImage]));
+      setCurrentIndex((i) => i + 1);
+      setShuffleKey(Date.now());
+      setTimeLeft(config?.timePerImage ?? 0);
       return;
     }
 
-    const interval = setInterval(() => {
-      setTimeLeft((t) => t - 1);
-    }, 1000);
+    // End session when timer hits 0 and we're on the last image
+    if (timeLeft === 0 && currentIndex >= (config?.numberOfImages ?? 1) - 1) {
+      router.push('/studio'); // session complete
+      return;
+    }
 
-    return () => clearInterval(interval);
+    // Continue countdown if timer is greater than 0
+    if (timeLeft > 0) {
+      const interval = setInterval(() => {
+        setTimeLeft((t) => t - 1);
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
   }, [
     timeLeft,
     isPaused,
     currentIndex,
-    sessionImages.length,
+    availableImages,
+    usedImages,
     config?.timePerImage,
+    config?.numberOfImages,
     router,
     mode,
+    getNextRandomImage,
   ]);
 
   const handlePauseResume = () => setIsPaused((prev) => !prev);
 
   const handleShuffle = () => {
-    if (!allImages) return;
-    const currentImage = sessionImages[currentIndex];
-    const otherImages = allImages
-      .map((img) => img.path)
-      .filter((p) => p !== currentImage);
-    const newImage =
-      otherImages[Math.floor(Math.random() * otherImages.length)] ??
-      currentImage;
+    if (!availableImages.length) return;
 
-    const newSessionImages = [...sessionImages];
-    newSessionImages[currentIndex] = newImage;
-    setSessionImages(newSessionImages);
+    const newImage = getNextRandomImage();
+    setCurrentImage(newImage);
+    setUsedImages((prev) => new Set([...prev, newImage]));
     setShuffleKey(Date.now());
     setTimeLeft(config?.timePerImage ?? 0);
   };
@@ -125,8 +163,6 @@ export default function SessionPage() {
       </div>
     );
   }
-
-  const currentImage = sessionImages[currentIndex];
 
   return (
     <div className="relative flex h-screen w-screen items-center justify-center bg-black text-white">
@@ -152,6 +188,13 @@ export default function SessionPage() {
         >
           End Session
         </Button>
+      </div>
+
+      {/* Progress indicator */}
+      <div className="absolute right-4 top-4 z-10 text-sm">
+        Image {currentIndex + 1} of {config?.numberOfImages}
+        <br />
+        Pool: {usedImages.size}/{availableImages.length} used
       </div>
 
       {/* Fullscreen Image */}
