@@ -62,6 +62,7 @@ export default function ReferenceManager() {
             onClose={(selectedTagIds) => {
               setFilterTagIds(new Set(selectedTagIds));
             }}
+            openOnMount={true}
           />
         )}
         <ImageUploadPanel userId={user.id} />

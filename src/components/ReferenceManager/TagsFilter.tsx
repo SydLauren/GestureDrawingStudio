@@ -15,12 +15,14 @@ interface TagsFilterProps {
   selectedTagIds: string[];
   allTags: Tag[];
   onClose: (selectedTagIds: string[]) => void;
+  openOnMount?: boolean;
 }
 
 export default function TagsFilter({
   selectedTagIds,
   allTags,
   onClose,
+  openOnMount = false,
 }: TagsFilterProps) {
   const setTagDropdownOpen = useSetAtom(imageTagDropdownOpen);
   const [search, setSearch] = useState('');
@@ -32,6 +34,12 @@ export default function TagsFilter({
   const localSelectedTags = allTags.filter((tag) =>
     localSelectedTagIds.includes(tag.id),
   );
+
+  useEffect(() => {
+    if (openOnMount) {
+      setOpen(true);
+    }
+  }, [openOnMount]);
 
   useEffect(() => {
     setTagDropdownOpen(open);

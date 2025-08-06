@@ -224,6 +224,8 @@ export const TagDropdownContent = ({
   onToggle: (tagId: string) => void;
   onCreateNewTag?: (name: string) => void;
 }) => {
+  const [focusedTagId, setFocusedTagId] = useState<string | null>(null);
+  console.log('🚀 ~ TagDropdownContent ~ focusedTagId:', focusedTagId);
   const mergedTags = useMemo(() => {
     const tagMap = new Map<string, Tag>();
 
@@ -260,6 +262,19 @@ export const TagDropdownContent = ({
   const showCreateOption =
     search.trim() !== '' && !exactMatch && onCreateNewTag;
 
+  // Toggle the selection of a tag if it is focused and the user presses Enter
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && focusedTagId) {
+        e.preventDefault();
+        onToggle(focusedTagId);
+        setFocusedTagId(null); // Clear focus after toggling
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [focusedTagId, onToggle]);
   return (
     <div className="w-full p-0">
       <div className="border-b p-2">
@@ -291,6 +306,14 @@ export const TagDropdownContent = ({
                 checked={isSelected}
                 onCheckedChange={() => onToggle(tag.id)}
                 className="pointer-events-none"
+                onFocusCapture={() => {
+                  setFocusedTagId(tag.id);
+                }}
+                onBlurCapture={() => {
+                  if (focusedTagId === tag.id) {
+                    setFocusedTagId(null);
+                  }
+                }}
               />
               <span className="truncate">{tag.name}</span>
             </div>
